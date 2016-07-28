@@ -1,11 +1,9 @@
-
+"use strict";
 /**
  * Module dependencies.
  */
 
-var debug = require('debug')('socket.io-parser');
-var json = require('json3');
-var isArray = require('isarray');
+//var debug = require('debug')('socket.io-parser');
 var Emitter = require('component-emitter');
 var binary = require('./binary');
 var isBuf = require('./is-buffer');
@@ -125,9 +123,9 @@ function Encoder() {}
  */
 
 Encoder.prototype.encode = function(obj, callback){
-  debug('encoding packet %j', obj);
+  //debug('encoding packet %j', obj);
 
-  if (exports.BINARY_EVENT == obj.type || exports.BINARY_ACK == obj.type) {
+  if (exports.BINARY_EVENT === obj.type || exports.BINARY_ACK === obj.type) {
     encodeAsBinary(obj, callback);
   }
   else {
@@ -147,25 +145,24 @@ Encoder.prototype.encode = function(obj, callback){
 function encodeAsString(obj) {
   var str = '';
   var nsp = false;
-
   // first is type
   str += obj.type;
 
   // attachments if we have them
-  if (exports.BINARY_EVENT == obj.type || exports.BINARY_ACK == obj.type) {
+  if (exports.BINARY_EVENT === obj.type || exports.BINARY_ACK === obj.type) {
     str += obj.attachments;
     str += '-';
   }
 
   // if we have a namespace other than `/`
   // we append it followed by a comma `,`
-  if (obj.nsp && '/' != obj.nsp) {
+  if (obj.nsp && '/' !== obj.nsp) {
     nsp = true;
     str += obj.nsp;
   }
 
   // immediately followed by the id
-  if (null != obj.id) {
+  if (undefined !== obj.id) {
     if (nsp) {
       str += ',';
       nsp = false;
@@ -174,12 +171,12 @@ function encodeAsString(obj) {
   }
 
   // json data
-  if (null != obj.data) {
+  if (undefined !== obj.data) {
     if (nsp) str += ',';
-    str += json.stringify(obj.data);
+    str += JSON.stringify(obj.data);
   }
 
-  debug('encoded %j as %s', obj, str);
+  //debug('encoded %j as %s', obj, str);
   return str;
 }
 
@@ -194,7 +191,6 @@ function encodeAsString(obj) {
  */
 
 function encodeAsBinary(obj, callback) {
-
   function writeEncoding(bloblessData) {
     var deconstruction = binary.deconstructPacket(bloblessData);
     var pack = encodeAsString(deconstruction.packet);
@@ -234,9 +230,9 @@ Emitter(Decoder.prototype);
 
 Decoder.prototype.add = function(obj) {
   var packet;
-  if ('string' == typeof obj) {
+  if ('string' === typeof obj) {
     packet = decodeString(obj);
-    if (exports.BINARY_EVENT == packet.type || exports.BINARY_ACK == packet.type) { // binary packet's json
+    if (exports.BINARY_EVENT === packet.type || exports.BINARY_ACK === packet.type) { // binary packet's json
       this.reconstructor = new BinaryReconstructor(packet);
 
       // no attachments, labeled binary but no binary data to follow
@@ -274,40 +270,39 @@ Decoder.prototype.add = function(obj) {
 function decodeString(str) {
   var p = {};
   var i = 0;
-
   // look up type
-  p.type = Number(str.charAt(0));
-  if (null == exports.types[p.type]) return error();
+  p.type = parseInt(str.charAt(0));
+  if (undefined === exports.types[p.type]) return error();
 
   // look up attachments if type binary
-  if (exports.BINARY_EVENT == p.type || exports.BINARY_ACK == p.type) {
+  if (exports.BINARY_EVENT === p.type || exports.BINARY_ACK === p.type) {
     var buf = '';
-    while (str.charAt(++i) != '-') {
+    while (str.charAt(++i) !== '-') {
       buf += str.charAt(i);
-      if (i == str.length) break;
+      if (i === str.length) break;
     }
-    if (buf != Number(buf) || str.charAt(i) != '-') {
+    if (buf != Number(buf) || str.charAt(i) !== '-') {
       throw new Error('Illegal attachments');
     }
     p.attachments = Number(buf);
   }
 
   // look up namespace (if any)
-  if ('/' == str.charAt(i + 1)) {
+  if ('/' === str.charAt(i + 1)) {
     p.nsp = '';
     while (++i) {
       var c = str.charAt(i);
-      if (',' == c) break;
+      if (',' === c) break;
       p.nsp += c;
-      if (i == str.length) break;
+      if (i === str.length) break;
     }
   } else {
     p.nsp = '/';
   }
 
   // look up id
-  var next = str.charAt(i + 1);
-  if ('' !== next && Number(next) == next) {
+  var next = parseInt(str.charAt(i + 1));
+  if ( Number.isInteger(next) ){      
     p.id = '';
     while (++i) {
       var c = str.charAt(i);
@@ -316,21 +311,17 @@ function decodeString(str) {
         break;
       }
       p.id += str.charAt(i);
-      if (i == str.length) break;
+      if (i === str.length) break;
     }
-    p.id = Number(p.id);
+    p.id = parseInt(p.id);
   }
 
   // look up json data
   if (str.charAt(++i)) {
-    try {
-      p.data = json.parse(str.substr(i));
-    } catch(e){
-      return error();
-    }
+      p.data = JSON.parse(str.substr(i));
   }
 
-  debug('decoded %s as %j', str, p);
+  //debug('decoded %s as %j', str, p);
   return p;
 }
 
