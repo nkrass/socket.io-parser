@@ -72,7 +72,7 @@ const BINARY_ACK = module.exports.BINARY_ACK = Number(6);
  * @return {BinaryReconstructor} initialized reconstructor
  * @api private
  */
-const BinaryReconstructor = class {
+const BinaryReconstructor = class BinaryReconstructor{
   constructor(packet) {
     this.reconPack = packet;
     this.buffers = [];
@@ -112,7 +112,7 @@ const BinaryReconstructor = class {
  * @constructor
  * @api public
  */
-const Encoder = module.exports.Encoder = class {
+const Encoder = module.exports.Encoder = class Encoder{
   constructor() {}
 
   /**
@@ -204,7 +204,7 @@ const Encoder = module.exports.Encoder = class {
  * @return {Object} decoder
  * @api public
  */
-const Decoder = module.exports.Decoder = class extends Emitter {
+const Decoder = module.exports.Decoder = class Decoder extends Emitter {
   constructor(){
     super();
     this.reconstructor = null;
