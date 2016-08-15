@@ -7,8 +7,6 @@
     "url": "https://github.com/Automattic/socket.io-parser.git"
   },
   "dependencies": {
-    "component-emitter": "1.1.2",
-    "isarray": "0.0.1",
     "benchmark": "1.0.0"
   },
   "devDependencies": {
